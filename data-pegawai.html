@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Karyawan - Bio Monitor</title>
+    
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* CSS Tambahan untuk Modal */
+        .modal-overlay {
+            display: none; 
+            position: fixed; 
+            top: 0; left: 0; 
+            width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.6); 
+            z-index: 9999; 
+            justify-content: center; 
+            align-items: center;
+            backdrop-filter: blur(4px);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #4d5969;
+        }
+        .form-control {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #d8e2ef;
+            border-radius: 4px;
+            font-family: inherit;
+        }
+        .status.green { background: #e6f9ed; color: #00a651; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; }
+        .status.red { background: #fde6e6; color: #e63757; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; }
+        
+        /* Flex utility untuk tombol aksi agar sejajar rapi */
+        .action-buttons {
+            display: flex;
+            gap: 6px;
+        }
+    </style>
+</head>
+<body class="dashboard-body">
+
+    <nav class="sidebar">
+        <div class="sidebar-brand">
+            <h2><i class="fa-solid fa-fingerprint"></i> PT. ANGKASA</h2>
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="dashboard.html"><i class="fa-solid fa-gauge-high"></i> Dashboard</a></li>
+            <li><a href="riwayat-absensi.html"><i class="fa-solid fa-clipboard-list"></i> Riwayat Absensi</a></li>
+            <li class="active"><a href="data-pegawai.html"><i class="fa-solid fa-users"></i> Data Karyawan</a></li>
+            <li><a href="#" id="logout-btn"><i class="fa-solid fa-right-from-bracket"></i> Logout</a></li>
+        </ul>
+    </nav>
+
+    <main class="main-content">
+        <header class="dashboard-header crm-header">
+            <div class="search-wrapper">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="search" id="searchKaryawan" placeholder="Cari nama karyawan...">
+            </div>
+            
+            <div class="header-actions">
+                <div class="icon-btn">
+                    <i class="fa-regular fa-bell"></i>
+                </div>
+                <div class="user-profile">
+                    <img src="https://ui-avatars.com/api/?name=Putu+Angga&background=2c7be5&color=fff" alt="Admin">
+                    <div>
+                        <h4>Putu Angga D.S.</h4>
+                        <small>Admin Utama</small>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <h2 style="color: var(--falcon-heading); font-weight: 700;">Data Karyawan</h2>
+                <p style="color: var(--falcon-text); font-size: 0.9rem;">Kelola data responden yang terdaftar dalam sistem.</p>
+            </div>
+            <button class="btn-sm" onclick="bukaModal()" style="height: 40px; display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                <i class="fa-solid fa-user-plus"></i> Tambah Karyawan
+            </button>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3>Daftar Seluruh Karyawan</h3>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn-sm" style="background: var(--falcon-light); color: var(--falcon-text);"><i class="fa-solid fa-filter"></i> Filter</button>
+                    <button class="btn-sm" style="background: var(--falcon-light); color: var(--falcon-text);"><i class="fa-solid fa-download"></i> Export</button>
+                </div>
+            </div>
+            <div class="card-body table-responsive">
+                <table class="crm-table" id="tabelKaryawan">
+                    <thead>
+                        <tr>
+                            <td>ID Jari</td>
+                            <td>Nama Lengkap</td>
+                            <td>Jabatan / Divisi</td>
+                            <td>Jenis Kelamin</td> <!-- Kolom Baru -->
+                            <td>Terdaftar Pada</td>
+                            <td>Status</td>
+                            <td>Aksi</td>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <div id="modalTambah" class="modal-overlay">
+        <div class="card" style="width: 450px; margin: 0; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
+            <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #edf2f9;">
+                <h3 style="margin: 0; font-size: 1.1rem;"><i class="fa-solid fa-user-gear" style="margin-right: 10px; color: var(--falcon-primary);"></i>Registrasi Karyawan Baru</h3>
+                <button onclick="tutupModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #9da9bb;">&times;</button>
+            </div>
+            <div class="card-body" style="padding: 20px;">
+                <form id="formTambahKaryawan">
+                    <div class="form-group">
+                        <label>ID Fingerprint (Angka 1-127)</label>
+                        <input type="number" id="id_karyawan" class="form-control" placeholder="Contoh: 5" min="1" max="127" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Nama Lengkap</label>
+                        <input type="text" id="nama_karyawan" class="form-control" placeholder="Masukkan nama responden" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Jabatan / Divisi</label>
+                        <select id="jabatan" class="form-control" required>
+                            <option value="">Pilih Jabatan</option>
+                            <option value="Staff IT">Staff IT</option>
+                            <option value="HRD">HRD</option>
+                            <option value="Marketing">Marketing</option>
+                            <option value="Finance">Finance</option>
+                            <option value="Teknisi">Teknisi</option>
+                        </select>
+                    </div>
+                    <!-- Tambahan Input Usia dan Jenis Kelamin -->
+                    <div class="form-group">
+                        <label>Usia</label>
+                        <input type="number" id="usia_karyawan" class="form-control" placeholder="Contoh: 25" min="15" max="100" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Jenis Kelamin</label>
+                        <select id="gender_karyawan" class="form-control" required>
+                            <option value="">Pilih Jenis Kelamin</option>
+                            <option value="Laki-laki">Laki-laki</option>
+                            <option value="Perempuan">Perempuan</option>
+                        </select>
+                    </div>
+                    <div style="background: #f8f9fa; padding: 10px; border-radius: 4px; margin-bottom: 20px; border-left: 4px solid var(--falcon-warning);">
+                        <small style="color: #5e6e82;"><i class="fa-solid fa-circle-info"></i> Alat akan otomatis masuk ke mode <b>Enroll</b> setelah data disimpan.</small>
+                    </div>
+                    <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                        <button type="button" onclick="tutupModal()" class="btn-sm" style="background: var(--falcon-light); color: var(--falcon-text);">Batal</button>
+                        <button type="submit" class="btn-sm" style="background: var(--falcon-primary); padding: 0 20px;">Simpan & Daftar Jari</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div id="modalPDF" class="modal-overlay">
+        <div class="card" style="width: 400px; margin: 0; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
+            <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #edf2f9;">
+                <h3 style="margin: 0; font-size: 1.1rem;"><i class="fa-solid fa-file-pdf" style="margin-right: 10px; color: #e63757;"></i>Eksport Laporan Absensi & Kesehatan</h3>
+                <button onclick="tutupModalPDF()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #9da9bb;">&times;</button>
+            </div>
+            <div class="card-body" style="padding: 20px;">
+                <input type="hidden" id="pdf_id_karyawan">
+                <input type="hidden" id="pdf_nama_karyawan">
+                <input type="hidden" id="pdf_jabatan_karyawan">
+                
+                <div class="form-group">
+                    <label>Nama Karyawan</label>
+                    <input type="text" id="pdf_display_name" class="form-control" readonly style="background: #f1f5f9; font-weight: 600;">
+                </div>
+                <div class="form-group">
+                    <label>Tanggal Mulai</label>
+                    <input type="date" id="tgl_mulai" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>Tanggal Selesai</label>
+                    <input type="date" id="tgl_selesai" class="form-control" required>
+                </div>
+                
+                <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
+                    <button type="button" onclick="tutupModalPDF()" class="btn-sm" style="background: var(--falcon-light); color: var(--falcon-text);">Batal</button>
+                    <button type="button" onclick="prosesCetakPDF()" class="btn-sm" style="background: #e63757; color: white; padding: 0 20px;">
+                        <i class="fa-solid fa-cloud-arrow-down"></i> Unduh PDF
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modalMintaGrafik" class="modal-overlay">
+        <div class="card" style="width: 400px; margin: 0; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
+            <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #edf2f9;">
+                <h3 style="margin: 0; font-size: 1.1rem;"><i class="fa-solid fa-chart-line" style="margin-right: 10px; color: #2c7be5;"></i>Filter Rentang Waktu Grafik</h3>
+                <button onclick="tutupModalGrafik()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #9da9bb;">&times;</button>
+            </div>
+            <div class="card-body" style="padding: 20px;">
+                <input type="hidden" id="chart_id_karyawan">
+                <input type="hidden" id="chart_nama_karyawan">
+                
+                <div class="form-group">
+                    <label>Nama Karyawan</label>
+                    <input type="text" id="chart_display_name" class="form-control" readonly style="background: #f1f5f9; font-weight: 600;">
+                </div>
+                <div class="mb-3">
+    <label class="form-label" style="font-weight: 600; color: #4e5e7a;">Mode Tampilan Grafik</label>
+    <input type="text" class="form-control" value="Multi-Parameter Terintegrasi" readonly disabled style="background-color: #f8f9fa;">
+</div>
+                <div class="form-group">
+                    <label>Tanggal Mulai (Start)</label>
+                    <input type="date" id="chart_tgl_mulai" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>Tanggal Selesai (End)</label>
+                    <input type="date" id="chart_tgl_selesai" class="form-control" required>
+                </div>
+                
+                <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
+                    <button type="button" onclick="tutupModalGrafik()" class="btn-sm" style="background: var(--falcon-light); color: var(--falcon-text);">Batal</button>
+                    <button type="button" onclick="prosesTampilkanGrafik()" class="btn-sm" style="background: #2c7be5; color: white; padding: 0 20px;">
+                        <i class="fa-solid fa-eye"></i> Tampilkan Grafik
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modalTampilGrafik" class="modal-overlay">
+        <div class="card" style="width: 750px; margin: 0; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
+            <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #edf2f9;">
+                <h3 id="chart_judul_halaman" style="margin: 0; font-size: 1.1rem; color: #2c7be5;">Visualisasi Grafik Kesehatan</h3>
+                <button onclick="tutupModalTampilGrafik()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #9da9bb;">&times;</button>
+            </div>
+            <div class="card-body" style="padding: 20px; background: #fff;">
+                <div style="width: 100%; height: 350px; position: relative;">
+                    <canvas id="canvasGrafikKesehatan"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script type="module">
+        if (!sessionStorage.getItem("statusLogin")) {
+            window.location.replace("index.html");
+        }
+
+        window.onpageshow = function(event) {
+            if (event.persisted || (window.performance && window.performance.navigation.type === 2)) {
+                window.location.reload();
+            }
+        };
+
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, set, update, onValue, remove, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyD5Zzz6TyWU_Sk6rJ9ZxYR--AOmaVvHqW8",
+            authDomain: "absensi-vitalsign.firebaseapp.com",
+            databaseURL: "https://absensi-vitalsign-default-rtdb.firebaseio.com/",
+            projectId: "absensi-vitalsign",
+            storageBucket: "absensi-vitalsign.firebasestorage.app",
+            appId: "1:852130724137:web:eb4607c03c594090095f38"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        // Variabel global untuk menyimpan objek Chart agar bisa di-destroy sebelum membuat grafik baru
+        let objekChartInstance = null;
+
+        window.bukaModal = () => document.getElementById('modalTambah').style.display = 'flex';
+        window.tutupModal = () => document.getElementById('modalTambah').style.display = 'none';
+        
+        window.bukaModalPDF = (id, nama, jabatan) => {
+            document.getElementById('pdf_id_karyawan').value = id;
+            document.getElementById('pdf_nama_karyawan').value = nama;
+            document.getElementById('pdf_jabatan_karyawan').value = jabatan;
+            document.getElementById('pdf_display_name').value = `[ID-${id}] ${nama}`;
+            
+            const hariIni = new Date().toISOString().split('T')[0];
+            document.getElementById('tgl_mulai').value = hariIni;
+            document.getElementById('tgl_selesai').value = hariIni;
+            
+            document.getElementById('modalPDF').style.display = 'flex';
+        };
+        window.tutupModalPDF = () => document.getElementById('modalPDF').style.display = 'none';
+
+        // TAMBAHAN BARU 4: FUNGSI GLOBAL MODAL FILTER GRAFIK
+        window.bukaModalGrafik = (id, nama) => {
+            document.getElementById('chart_id_karyawan').value = id;
+            document.getElementById('chart_nama_karyawan').value = nama;
+            document.getElementById('chart_display_name').value = `[ID-${id}] ${nama}`;
+            
+            const hariIni = new Date().toISOString().split('T')[0];
+            document.getElementById('chart_tgl_mulai').value = hariIni;
+            document.getElementById('chart_tgl_selesai').value = hariIni;
+            
+            document.getElementById('modalMintaGrafik').style.display = 'flex';
+        };
+        window.tutupModalGrafik = () => document.getElementById('modalMintaGrafik').style.display = 'none';
+        window.tutupModalTampilGrafik = () => document.getElementById('modalTampilGrafik').style.display = 'none';
+
+        window.onclick = (event) => {
+            if (event.target == document.getElementById('modalTambah')) tutupModal();
+            if (event.target == document.getElementById('modalPDF')) tutupModalPDF();
+            if (event.target == document.getElementById('modalMintaGrafik')) tutupModalGrafik();
+            if (event.target == document.getElementById('modalTampilGrafik')) tutupModalTampilGrafik();
+        };
+
+        const karyawanRef = ref(db, 'karyawan');
+        onValue(karyawanRef, (snapshot) => {
+            const data = snapshot.val();
+            const tbody = document.querySelector('#tabelKaryawan tbody');
+            tbody.innerHTML = "";
+
+            if (data) {
+                Object.keys(data).forEach(id => {
+                    const k = data[id];
+                    const statusClass = k.status === "Aktif" ? "green" : "red";
+                    
+                    const namaAman = k.nama.replace(/'/g, "\\'");
+                    const jabAman = k.jabatan.replace(/'/g, "\\'");
+                    
+                    // Fallback strip (-) jika data karyawan lama belum memiliki field jenis_kelamin
+                    const genderTampil = k.jenis_kelamin || '-'; 
+
+                    const row = `
+                        <tr>
+                            <td><b>ID-${id}</b></td>
+                            <td>
+                                <div class="user-info">
+                                    <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(k.nama)}&background=random" alt="">
+                                    <div>
+                                        <h4>${k.nama}</h4>
+                                        <small>${k.jabatan}</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>${k.jabatan}</td>
+                            <td>${genderTampil}</td> <!-- Data Kolom Baru -->
+                            <td>${k.registered_at || '-'}</td>
+                            <td><span class="status ${statusClass}">${k.status}</span></td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn-sm" style="background: #e63757; color: white;" onclick="bukaModalPDF('${id}', '${namaAman}', '${jabAman}')" title="Unduh PDF">
+                                        <i class="fa-solid fa-file-pdf"></i>
+                                    </button>
+                                    <button class="btn-sm" style="background: #2c7be5; color: white;" onclick="bukaModalGrafik('${id}', '${namaAman}')" title="Lihat Grafik Kesehatan">
+                                        <i class="fa-solid fa-chart-line"></i>
+                                    </button>
+                                    <button class="btn-sm" style="background: var(--falcon-danger);" onclick="hapusKaryawan('${id}')" title="Hapus Karyawan">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                    tbody.insertAdjacentHTML('beforeend', row);
+                });
+            }
+        });
+
+  // ==========================================
+        // PROSES LOGIKA PENGAMBILAN & FILTER DATA GRAFIK (SEMUA PARAMETER + GARIS TEBAL)
+        // ==========================================
+        window.prosesTampilkanGrafik = async () => {
+            const id = document.getElementById('chart_id_karyawan').value;
+            const namaForm = document.getElementById('chart_nama_karyawan').value.trim().toLowerCase();
+            const tglMulai = document.getElementById('chart_tgl_mulai').value;
+            const tglSelesai = document.getElementById('chart_tgl_selesai').value;
+
+            if (!tglMulai || !tglSelesai) {
+                alert("Harap tentukan tanggal mulai dan selesai!");
+                return;
+            }
+            if (new Date(tglMulai) > new Date(tglSelesai)) {
+                alert("Tanggal mulai tidak boleh melebihi tanggal selesai!");
+                return;
+            }
+
+            try {
+                const riwayatRef = ref(db, 'absensi_log');
+                const snapshot = await get(riwayatRef);
+                
+                let dataGrupTanggal = {};
+
+                if (snapshot.exists()) {
+                    const semuaLog = snapshot.val();
+                    
+                    Object.keys(semuaLog).forEach(key => {
+                        const log = semuaLog[key];
+                        const namaFirebase = log.nama ? log.nama.trim().toLowerCase() : "";
+                        
+                        if (String(log.id_jari) === String(id) || namaFirebase.includes(namaForm)) {
+                            const lastCheckin = log.last_checkin;
+                            
+                            if (lastCheckin && lastCheckin.length >= 10) {
+                                const tglHanya = lastCheckin.substring(0, 10); // "29-04-2026"
+                                const parts = tglHanya.split('-');
+                                
+                                if (parts.length === 3) {
+                                    const tglLogSiapBanding = `${parts[2]}-${parts[1]}-${parts[0]}`; // YYYY-MM-DD
+                                    
+                                    if (tglLogSiapBanding >= tglMulai && tglLogSiapBanding <= tglSelesai) {
+                                        
+                                        const suhuVal = parseFloat(log.suhu) && parseFloat(log.suhu) > 0 ? parseFloat(log.suhu) : null;
+                                        const bpmVal = log.bpm && log.bpm !== -1 ? parseFloat(log.bpm) : null;
+                                        const spo2Val = log.spo2 && log.spo2 !== -1 ? parseFloat(log.spo2) : null;
+                                        const gsrVal = parseFloat(log.gsr) && parseFloat(log.gsr) > 0 ? parseFloat(log.gsr) : null;
+
+                                        const waktuHanya = lastCheckin.substring(11, 16); // "04:21"
+                                        const waktuParts = waktuHanya.split(':');
+                                        const jamAngka = parseInt(waktuParts[0]) || 0;
+                                        const menitAngka = parseInt(waktuParts[1]) || 0;
+                                        const desimalJam = jamAngka + (menitAngka / 60);
+
+                                        if (!dataGrupTanggal[tglHanya]) {
+                                            dataGrupTanggal[tglHanya] = {
+                                                suhu_masuk: null, suhu_pulang: null,
+                                                bpm_masuk: null, bpm_pulang: null,
+                                                spo2_masuk: null, spo2_pulang: null,
+                                                gsr_masuk: null, gsr_pulang: null,
+                                                jam_masuk: null, jam_pulang: null
+                                            };
+                                        }
+
+                                        if (jamAngka < 12) {
+                                            if (suhuVal) dataGrupTanggal[tglHanya].suhu_masuk = suhuVal;
+                                            if (bpmVal) dataGrupTanggal[tglHanya].bpm_masuk = bpmVal;
+                                            if (spo2Val) dataGrupTanggal[tglHanya].spo2_masuk = spo2Val;
+                                            if (gsrVal) dataGrupTanggal[tglHanya].gsr_masuk = gsrVal;
+                                            dataGrupTanggal[tglHanya].jam_masuk = desimalJam;
+                                        } else {
+                                            if (suhuVal) dataGrupTanggal[tglHanya].suhu_pulang = suhuVal;
+                                            if (bpmVal) dataGrupTanggal[tglHanya].bpm_pulang = bpmVal;
+                                            if (spo2Val) dataGrupTanggal[tglHanya].spo2_pulang = spo2Val;
+                                            if (gsrVal) dataGrupTanggal[tglHanya].gsr_pulang = gsrVal;
+                                            dataGrupTanggal[tglHanya].jam_pulang = desimalJam;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+
+                const listTanggalDiurutkan = Object.keys(dataGrupTanggal).sort((a, b) => {
+                    const pA = a.split('-'); const pB = b.split('-');
+                    return `${pA[2]}${pA[1]}${pA[0]}`.localeCompare(`${pB[2]}${pB[1]}${pB[0]}`);
+                });
+
+                if (listTanggalDiurutkan.length === 0) {
+                    alert(`Tidak ditemukan data rekam medis valid pada rentang tanggal tersebut.`);
+                    return;
+                }
+
+                let datasetsMap = {
+                    suhuMasuk: [], suhuPulang: [],
+                    bpmMasuk: [], bpmPulang: [],
+                    spo2Masuk: [], spo2Pulang: [],
+                    gsrMasuk: [], gsrPulang: [],
+                    jamMasuk: [], jamPulang: []
+                };
+
+                listTanggalDiurutkan.forEach(tgl => {
+                    datasetsMap.suhuMasuk.push(dataGrupTanggal[tgl].suhu_masuk);
+                    datasetsMap.suhuPulang.push(dataGrupTanggal[tgl].suhu_pulang);
+                    datasetsMap.bpmMasuk.push(dataGrupTanggal[tgl].bpm_masuk);
+                    datasetsMap.bpmPulang.push(dataGrupTanggal[tgl].bpm_pulang);
+                    datasetsMap.spo2Masuk.push(dataGrupTanggal[tgl].spo2_masuk);
+                    datasetsMap.spo2Pulang.push(dataGrupTanggal[tgl].spo2_pulang);
+                    datasetsMap.gsrMasuk.push(dataGrupTanggal[tgl].gsr_masuk);
+                    datasetsMap.gsrPulang.push(dataGrupTanggal[tgl].gsr_pulang);
+                    datasetsMap.jamMasuk.push(dataGrupTanggal[tgl].jam_masuk);
+                    datasetsMap.jamPulang.push(dataGrupTanggal[tgl].jam_pulang);
+                });
+
+                tutupModalGrafik();
+                document.getElementById('modalTampilGrafik').style.display = 'flex';
+                
+                const namaTampilAsli = document.getElementById('chart_display_name').value;
+                document.getElementById('chart_judul_halaman').innerText = `Dashboard Analisis Kesehatan Terintegrasi - ${namaTampilAsli}`;
+
+                const ctx = document.getElementById('canvasGrafikKesehatan').getContext('2d');
+                if (objekChartInstance) {
+                    objekChartInstance.destroy();
+                }
+
+                objekChartInstance = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: listTanggalDiurutkan,
+                        datasets: [
+                            // PARAMETER REKAM MEDIS (Sumbu Kiri) - Ditambahkan showLine: true & backgroundColor agar solid
+                            { label: 'Suhu Masuk (°C)', data: datasetsMap.suhuMasuk, borderColor: '#2c7be5', backgroundColor: '#2c7be5', borderWidth: 3, pointRadius: 5, showLine: true, spanGaps: true, fill: false, yAxisID: 'yKesehatan' },
+                            { label: 'Suhu Pulang (°C)', data: datasetsMap.suhuPulang, borderColor: '#1a55a6', backgroundColor: '#1a55a6', borderWidth: 3, pointRadius: 5, showLine: true, spanGaps: true, fill: false, yAxisID: 'yKesehatan' },
+                            
+                            { label: 'BPM Masuk', data: datasetsMap.bpmMasuk, borderColor: '#e63757', backgroundColor: '#e63757', borderWidth: 3, pointRadius: 5, showLine: true, spanGaps: true, fill: false, yAxisID: 'yKesehatan' },
+                            { label: 'BPM Pulang', data: datasetsMap.bpmPulang, borderColor: '#a61c34', backgroundColor: '#a61c34', borderWidth: 3, pointRadius: 5, showLine: true, spanGaps: true, fill: false, yAxisID: 'yKesehatan' },
+                            
+                            { label: 'SpO2 Masuk (%)', data: datasetsMap.spo2Masuk, borderColor: '#00d27a', backgroundColor: '#00d27a', borderWidth: 3, pointRadius: 5, showLine: true, spanGaps: true, fill: false, yAxisID: 'yKesehatan' },
+                            { label: 'SpO2 Pulang (%)', data: datasetsMap.spo2Pulang, borderColor: '#008a4f', backgroundColor: '#008a4f', borderWidth: 3, pointRadius: 5, showLine: true, spanGaps: true, fill: false, yAxisID: 'yKesehatan' },
+                            
+                            { label: 'GSR Masuk (μS)', data: datasetsMap.gsrMasuk, borderColor: '#a155e8', backgroundColor: '#a155e8', borderWidth: 3, pointRadius: 5, showLine: true, spanGaps: true, fill: false, yAxisID: 'yKesehatan' },
+                            { label: 'GSR Pulang (μS)', data: datasetsMap.gsrPulang, borderColor: '#6930a0', backgroundColor: '#6930a0', borderWidth: 3, pointRadius: 5, showLine: true, spanGaps: true, fill: false, yAxisID: 'yKesehatan' },
+
+                            // DATA WAKTU ABSENSI (Sumbu Kanan)
+                            { label: 'Jam Masuk Riil', data: datasetsMap.jamMasuk, borderColor: '#f5803e', backgroundColor: '#f5803e', borderWidth: 2, borderDash: [5, 5], pointStyle: 'triangle', pointRadius: 6, showLine: true, spanGaps: true, fill: false, yAxisID: 'yWaktu' },
+                            { label: 'Jam Pulang Riil', data: datasetsMap.jamPulang, borderColor: '#b85414', backgroundColor: '#b85414', borderWidth: 2, borderDash: [5, 5], pointStyle: 'rect', pointRadius: 6, showLine: true, spanGaps: true, fill: false, yAxisID: 'yWaktu' }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        layout: {
+                            padding: { left: 10, right: 10, top: 10, bottom: 10 }
+                        },
+                        plugins: {
+                            legend: { position: 'top', labels: { font: { family: 'Inter', size: 10 }, boxWidth: 30 } },
+                            tooltip: { 
+                                mode: 'index', 
+                                intersect: false,
+                                callbacks: {
+                                    label: function(context) {
+                                        let label = context.dataset.label || '';
+                                        let value = context.raw;
+                                        if (value === null) return `${label}: -`;
+                                        if (context.dataset.yAxisID === 'yWaktu') {
+                                            let totalMenit = Math.round(value * 60);
+                                            let jam = Math.floor(totalMenit / 60);
+                                            let menit = totalMenit % 60;
+                                            return `${label}: ${String(jam).padStart(2, '0')}:${String(menit).padStart(2, '0')} WITA`;
+                                        }
+                                        return `${label}: ${value}`;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            x: { 
+                                type: 'category', // Menegaskan sumbu X berbasis kategori tanggal string
+                                grid: { color: '#edf2f9' }, 
+                                ticks: { font: { family: 'Inter' } } 
+                            },
+                            yKesehatan: { 
+                                type: 'linear', 
+                                display: true, 
+                                position: 'left', 
+                                grid: { color: '#edf2f9' },
+                                title: { display: true, text: 'Nilai Parameter Medis', font: { family: 'Inter', weight: 'bold' } }
+                            },
+                            yWaktu: { 
+                                type: 'linear', 
+                                display: true, 
+                                position: 'right', 
+                                min: 0, max: 24, 
+                                grid: { drawOnChartArea: false },
+                                ticks: {
+                                    stepSize: 4,
+                                    callback: function(value) { return String(value).padStart(2, '0') + ':00'; }
+                                },
+                                title: { display: true, text: 'Waktu Absensi (Jam)', font: { family: 'Inter', weight: 'bold' } }
+                            }
+                        }
+                    }
+                });
+
+            } catch (error) {
+                console.error("Gagal memproses pembuatan grafik:", error);
+                alert("Terjadi kesalahan sistem saat memproses chart.");
+            }
+        };
+
+        // ==========================================
+        // PROSES PEMBUATAN FILE PDF (JSPDF)
+        // ==========================================
+        window.prosesCetakPDF = async () => {
+            const id = document.getElementById('pdf_id_karyawan').value;
+            const namaForm = document.getElementById('pdf_nama_karyawan').value.trim().toLowerCase();
+            const jabatan = document.getElementById('pdf_jabatan_karyawan').value;
+            const tglMulai = document.getElementById('tgl_mulai').value;      
+            const tglSelesai = document.getElementById('tgl_selesai').value;  
+
+            if (!tglMulai || !tglSelesai) {
+                alert("Harap tentukan tanggal mulai dan selesai!");
+                return;
+            }
+            if (new Date(tglMulai) > new Date(tglSelesai)) {
+                alert("Tanggal mulai tidak boleh melebihi tanggal selesai!");
+                return;
+            }
+
+            try {
+                const riwayatRef = ref(db, 'absensi_log');
+                const snapshot = await get(riwayatRef);
+                let dataTabel = [];
+                
+                if (snapshot.exists()) {
+                    const semuaLog = snapshot.val();
+                    Object.keys(semuaLog).forEach(key => {
+                        const log = semuaLog[key];
+                        const namaFirebase = log.nama ? log.nama.trim().toLowerCase() : "";
+                        
+                        if (String(log.id_jari) === String(id) || namaFirebase.includes(namaForm) || namaForm.includes(namaFirebase)) {
+                            const lastCheckin = log.last_checkin; 
+                            if (lastCheckin && lastCheckin.length >= 10) {
+                                const tglHanya = lastCheckin.substring(0, 10); 
+                                const parts = tglHanya.split('-');
+                                if (parts.length === 3) {
+                                    const tglLogSiapBanding = `${parts[2]}-${parts[1]}-${parts[0]}`;
+                                    const jamHanya = lastCheckin.substring(11, 19) || '-';
+
+                                    if (tglLogSiapBanding >= tglMulai && tglLogSiapBanding <= tglSelesai) {
+                                        const bpmTampil = (log.bpm === -1 || log.bpm === "-1") ? "Gagal Membaca" : `${log.bpm} BPM`;
+                                        const spo2Tampil = (log.spo2 === -1 || log.spo2 === "-1") ? "Gagal Membaca" : `${log.spo2} %`;
+
+                                        dataTabel.push([
+                                            tglHanya,
+                                            jamHanya,
+                                            log.suhu ? `${log.suhu} °C` : '-',
+                                            bpmTampil,
+                                            spo2Tampil,
+                                            log.gsr ? `${log.gsr} µS` : '-',
+                                            log.kategori || 'Hadir'
+                                        ]);
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+
+                dataTabel.sort((a, b) => {
+                    const pA = a[0].split('-'); const pB = b[0].split('-');
+                    return new Date(`${pA[2]}-${pA[1]}-${pA[0]}`) - new Date(`${pB[2]}-${pB[1]}-${pB[0]}`);
+                });
+
+                if (dataTabel.length === 0) {
+                    const namaTampil = document.getElementById('pdf_nama_karyawan').value;
+                    alert(`Tidak ditemukan data untuk Karyawan: ${namaTampil} pada rentang pencarian ${tglMulai} s.d ${tglSelesai}`);
+                    return;
+                }
+
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+
+                doc.setFont("Inter", "bold"); doc.setFontSize(18);
+                doc.text("PT. ANGKASA", 14, 20);
+                doc.setFontSize(10); doc.setFont("Inter", "normal");
+                doc.text("Sistem Gerbang Biometrik & Monitor Kesehatan Fisiologis Terintegrasi", 14, 25);
+                doc.line(14, 28, 196, 28); 
+
+                doc.setFontSize(12); doc.setFont("Inter", "bold");
+                doc.text("LAPORAN KESEHATAN & ABSENSI KARYAWAN", 14, 38);
+                
+                doc.setFontSize(10); doc.setFont("Inter", "normal");
+                doc.text(`ID Fingerprint : ID-${id}`, 14, 46);
+                doc.text(`Nama Karyawan  : ${document.getElementById('pdf_nama_karyawan').value}`, 14, 52);
+                doc.text(`Jabatan/Divisi : ${jabatan}`, 14, 58);
+                doc.text(`Periode Data   : ${tglMulai} s.d ${tglSelesai}`, 14, 64);
+
+                doc.autoTable({
+                    startY: 70,
+                    head: [['Tanggal', 'Jam Scan', 'Suhu Tubuh', 'Detak Jantung', 'Saturasi O2', 'Stres (GSR)', 'Status']],
+                    body: dataTabel,
+                    theme: 'striped',
+                    headStyles: { fillColor: [44, 123, 229], fontStyle: 'bold' },
+                    styles: { fontSize: 9, halign: 'center' }
+                });
+
+                const namaFileFile = `Laporan_Kesehatan_${id}_${tglMulai}.pdf`;
+                doc.save(namaFileFile);
+                tutupModalPDF();
+
+            } catch (error) {
+                console.error("Gagal memproses pembuatan PDF:", error);
+                alert("Terjadi masalah inter koneksi dengan Firebase Realtime Database.");
+            }
+        };
+
+        // Handle Simpan Karyawan
+        document.getElementById('formTambahKaryawan').onsubmit = function(e) {
+            e.preventDefault();
+            const idJari = document.getElementById('id_karyawan').value;
+            const nama = document.getElementById('nama_karyawan').value;
+            const jab = document.getElementById('jabatan').value;
+            // Mengambil nilai input tambahan baru
+            const usia = document.getElementById('usia_karyawan').value;
+            const gender = document.getElementById('gender_karyawan').value;
+
+            const userRef = ref(db, 'karyawan/' + idJari);
+            const saveProfile = set(userRef, {
+                nama: nama,
+                jabatan: jab,
+                usia: parseInt(usia),
+                jenis_kelamin: gender,
+                status: "Menunggu Jari",
+                registered_at: new Date().toLocaleDateString('id-ID')
+            });
+
+            const commandRef = ref(db, 'device_commands');
+            const sendCommand = update(commandRef, {
+                mode: "enroll",
+                target_id: parseInt(idJari),
+                status: "Menunggu jari di sensor..."
+            });
+
+            Promise.all([saveProfile, sendCommand]).then(() => {
+                alert(`Data ${nama} berhasil disimpan!\n\nInstruksikan karyawan menempelkan jari pada alat.`);
+                tutupModal();
+                this.reset();
+            });
+        };
+
+        // Fungsi Hapus Sinkron
+        window.hapusKaryawan = (id) => {
+            if(confirm(`Hapus karyawan ID ${id}? Tindakan ini juga akan menghapus sidik jari dari alat secara otomatis.`)) {
+                const commandRef = ref(db, 'device_commands');
+                update(commandRef, {
+                    mode: "delete",
+                    target_id: parseInt(id),
+                    status: "Proses menghapus di alat..."
+                }).then(() => {
+                    remove(ref(db, 'karyawan/' + id)).then(() => {
+                        alert(`Data ID ${id} berhasil dihapus dari sistem dan alat.`);
+                    });
+                });
+            }
+        };
+
+        // Fitur Search
+        document.getElementById('searchKaryawan').addEventListener('keyup', function(e) {
+            const term = e.target.value.toLowerCase();
+            const rows = document.querySelectorAll('#tabelKaryawan tbody tr');
+            rows.forEach(row => {
+                row.style.display = row.textContent.toLowerCase().includes(term) ? '' : 'none';
+            });
+        });
+
+        // Logika Logout
+        const logoutBtn = document.getElementById('logout-btn');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', function(event) {
+                event.preventDefault(); 
+                if (confirm("Anda yakin ingin logout?")) {
+                    sessionStorage.clear();
+                    localStorage.clear();
+                    window.location.replace("index.html");
+                }
+            });
+        }
+    </script>
+</body>
+</html>

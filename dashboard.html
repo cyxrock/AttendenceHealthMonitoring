@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Skripsi - Putu Angga</title>
+    
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Tambahan style untuk indikator status di dashboard */
+        .status.orange { background: #fff4e6; color: #f6993f; }
+        .status.red { background: #fde6e6; color: #e63757; }
+        .status.blue { background: #e0f2fe; color: #0369a1; }
+        /* Tambahan Style untuk Banner dan Border Jam Digital */
+.clock-banner-container {
+    text-align: center; 
+    margin-bottom: 30px;
+    padding: 30px 20px;
+    border-radius: 16px;
+    /* Background modern menggunakan gradasi warna biru khas dashboard dengan aksen geometris halus */
+    background: linear-gradient(135deg, #000000 0%, #dee9ff 50%, #5a8ade 100%);
+    background-image: 
+        radial-gradient(at 0% 0%, rgba(44, 123, 229, 0.06) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(44, 123, 229, 0.04) 0px, transparent 50%);
+    box-shadow: inset 0 0 20px rgba(44, 123, 229, 0.03), 0 4px 12px rgba(0, 0, 0, 0.02);
+}
+
+.clock-border-box {
+    display: inline-block;
+    padding: 15px 40px;
+    border: none; /* Menghapus border sesuai request */
+    border-radius: 12px;
+    
+    /* GRADASI BERSIH: Biru muda cerah ke putih transparan */
+    background: linear-gradient(135deg, rgba(102, 179, 255, 0.25) 0%, rgba(255, 255, 255, 0.9) 100%);
+    
+    backdrop-filter: blur(8px); /* Efek kaca dipertebal agar makin estetik */
+    box-shadow: 0 8px 24px rgba(44, 123, 229, 0.12);
+}
+
+#digital-clock {
+    font-size: 3.2rem; 
+    font-weight: 800; 
+    color: #00aeff; 
+    margin: 0 0 5px 0; 
+    letter-spacing: 2px;
+    text-shadow: 1px 1px 2px rgba(44, 123, 229, 0.1);
+}
+
+#date-now {
+    font-size: 1.1rem; 
+    color: #00000079; 
+    font-weight: 600;
+    margin: 0;
+    text-transform: capitalize;
+}
+    </style>
+</head>
+<body class="dashboard-body">
+
+    <nav class="sidebar">
+        <div class="sidebar-brand">
+            <h2><i class="fa-solid fa-fingerprint"></i> PT. ANGKASA</h2>
+        </div>
+        <ul class="sidebar-menu">
+            <li class="active"><a href="dashboard.html"><i class="fa-solid fa-gauge-high"></i> Dashboard</a></li>
+            <li><a href="riwayat-absensi.html"><i class="fa-solid fa-clipboard-list"></i> Riwayat Absensi</a></li>
+            <li><a href="data-pegawai.html"><i class="fa-solid fa-users"></i> Data Karyawan</a></li>
+            <li><a href="#" id="logout-btn"><i class="fa-solid fa-right-from-bracket"></i> Logout</a></li>
+        </ul>
+    </nav>
+
+    <main class="main-content">
+        <header class="dashboard-header crm-header">
+            <div class="search-wrapper">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="search" id="search-input" placeholder="Cari nama, status, suhu...">
+            </div>
+            <div class="header-actions">
+                <div class="user-profile">
+                    <img src="https://ui-avatars.com/api/?name=Putu+Angga&background=2c7be5&color=fff" alt="Admin">
+                    <div>
+                        <h4>Putu Angga D.S.</h4>
+                        <small>NIM. 2215344021</small>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Area Background Container Jam -->
+<div class="clock-banner-container">
+    <!-- Konten Jam di Dalam Border -->
+    <div class="clock-border-box">
+        <h1 id="digital-clock">--:--:--</h1>
+        <p id="date-now">Memuat Tanggal...</p>
+    </div>
+</div>
+
+        <div class="cards-grid">
+            <div class="card-single">
+                <div>
+                    <h1 id="total-hadir">0</h1>
+                    <span>Kehadiran Hari Ini</span>
+                </div>
+                <div><i class="fa-solid fa-user-check icon-bg primary"></i></div>
+            </div>
+            <div class="card-single">
+                <div>
+                    <h1 id="avg-stress">Normal</h1>
+                    <span id="label-gsr-info">Kondisi User Terbaru</span>
+                </div>
+                <div><i class="fa-solid fa-brain icon-bg success" id="icon-stress"></i></div>
+            </div>
+        </div>
+
+        <div class="crm-grid">
+            <div class="crm-main">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Data Masuk Hari Ini</h3>
+                        <a href="riwayat-absensi.html" class="btn-sm" style="text-decoration: none;">Lihat Semua</a>
+                    </div>
+                    <div class="card-body table-responsive">
+                        <table class="crm-table">
+                            <thead>
+                                <tr>
+                                    <td>Nama</td>
+                                    <td>Suhu</td>
+                                    <td>BPM</td>
+                                    <td>SpO2</td>
+                                    <td>GSR (Stres)</td>
+                                    <td>Status</td>
+                                </tr>
+                            </thead>
+                            <tbody id="dashboard-table-body">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="crm-sidebar">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Feed Terbaru</h3>
+                    </div>
+                    <div class="card-body p-1">
+                        <div class="activity-feed" id="activity-feed-list">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+    <script>
+        // =========================================================================
+        // SATPAM PROTEKSI UTAMA: JIKA BELUM LOGIN, TENDANG KEMBALI KE BERANDA
+        // =========================================================================
+        if (!sessionStorage.getItem("statusLogin")) {
+            window.location.replace("index.html");
+        }
+
+        // ANTI-CACHE SYSTEM: Memaksa reload script jika user menekan tombol BACK di browser
+        window.onpageshow = function(event) {
+            if (event.persisted || (window.performance && window.performance.navigation.type === 2)) {
+                window.location.reload();
+            }
+        };
+
+        // Konfigurasi Firebase Anda
+        const firebaseConfig = {
+            apiKey: "AIzaSyD5Zzz6TyWU_Sk6rJ9ZxYR--AOmaVvHqW8",
+            databaseURL: "https://absensi-vitalsign-default-rtdb.firebaseio.com/",
+            projectId: "absensi-vitalsign"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        // Logika Jam Digital
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('digital-clock').innerText = now.toLocaleTimeString('id-ID');
+            document.getElementById('date-now').innerText = now.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // Mengambil Data Nama dari Node Karyawan
+        async function getNama(id) {
+            const snap = await db.ref('karyawan/' + id).once('value');
+            return snap.exists() ? snap.val().nama : "ID: " + id;
+        }
+
+        const tableBody = document.getElementById('dashboard-table-body');
+        const feedList = document.getElementById('activity-feed-list');
+        const totalHadirText = document.getElementById('total-hadir');
+        const avgStressText = document.getElementById('avg-stress');
+
+        // Mengambil Data Log Absensi secara Real-time
+        db.ref('absensi_log').on('value', async (snapshot) => {
+            const logs = [];
+            snapshot.forEach(child => { 
+                logs.push({ key: child.key, ...child.val() }); 
+            });
+            logs.reverse();
+
+            totalHadirText.innerText = logs.length;
+
+            if (logs.length > 0) {
+                const latestData = logs[0];
+                let gsrVal = parseFloat(latestData.gsr || 0);
+                if (gsrVal > 20) {
+                    avgStressText.innerText = "Tinggi";
+                    avgStressText.style.color = "#e63757";
+                } else if (gsrVal > 5) {
+                    avgStressText.innerText = "Sedang";
+                    avgStressText.style.color = "#f6993f";
+                } else {
+                    avgStressText.innerText = "Rileks";
+                    avgStressText.style.color = "#00a651";
+                }
+            }
+
+            const rowsPromises = logs.map(async (data) => {
+                const namaUser = await getNama(data.id_jari);
+                
+                let suhuVal = parseFloat(data.suhu || 0).toFixed(1);
+                let suhuClass = (suhuVal >= 37.5) ? "red" : (suhuVal < 35.0 && suhuVal > 0) ? "blue" : "green";
+
+                let gsrValue = parseFloat(data.gsr || 0).toFixed(2);
+                let gsrClass = "green";
+                if (gsrValue > 20) gsrClass = "red";
+                else if (gsrValue > 5) gsrClass = "orange";
+
+                return `
+                    <tr>
+                        <td>
+                            <div class="user-info">
+                                <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(namaUser)}&background=random">
+                                <div><h4>${namaUser}</h4><small>${data.last_checkin}</small></div>
+                            </div>
+                        </td>
+                        <td><span class="status ${suhuClass}">${suhuVal}°C</span></td>
+                        <td><span class="status green">${data.bpm} bpm</span></td>
+                        <td><span class="status ${data.spo2 < 95 ? 'warning' : 'green'}">${data.spo2}%</span></td>
+                        <td><span class="status ${gsrClass}">${gsrValue} μS</span></td>
+                        <td><span class="status green">Hadir</span></td>
+                    </tr>
+                `;
+            });
+
+            const feedsPromises = logs.slice(0, 3).map(async (data) => {
+                const namaUser = await getNama(data.id_jari);
+                let gsrValue = parseFloat(data.gsr || 0).toFixed(2);
+                return `
+                    <div class="feed-item">
+                        <div class="feed-icon primary"><i class="fa-solid fa-heart-pulse"></i></div>
+                        <div class="feed-content">
+                            <h4>Absensi: ${namaUser}</h4>
+                            <p>Suhu: ${data.suhu}°C | Stres: ${gsrValue} μS</p>
+                            <small>${data.last_checkin.split(' ')[1]}</small>
+                        </div>
+                    </div>
+                `;
+            });
+
+            const [allRows, allFeeds] = await Promise.all([
+                Promise.all(rowsPromises),
+                Promise.all(feedsPromises)
+            ]);
+
+            if(tableBody) tableBody.innerHTML = allRows.join('');
+            if(feedList) feedList.innerHTML = allFeeds.join('');
+        });
+
+        // Fitur Filter Pencarian Tabel
+        const searchInput = document.getElementById('search-input');
+        if (searchInput) {
+            searchInput.addEventListener('input', function() {
+                const filterValue = this.value.toLowerCase();
+                const tableRows = document.querySelectorAll('#dashboard-table-body tr');
+
+                tableRows.forEach(row => {
+                    const rowText = row.textContent.toLowerCase();
+                    row.style.display = rowText.includes(filterValue) ? '' : 'none';
+                });
+            });
+        }
+
+        // =========================================================================
+        // LOGIKA LOGOUT BARU: POPUP KONFIRMASI + PENGHANCURAN SESI TOTAL
+        // =========================================================================
+        const logoutBtn = document.getElementById('logout-btn');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', function(event) {
+                event.preventDefault(); 
+                
+                const yakinLogout = confirm("Anda yakin ingin logout?");
+                
+                if (yakinLogout) {
+                    // 1. Bersihkan semua tanda login dari browser komputer
+                    sessionStorage.clear();
+                    localStorage.clear();
+                    
+                    // 2. Alihkan ke halaman beranda dan hapus riwayat dashboard dari browser
+                    window.location.replace("index.html");
+                } else {
+                    console.log("Logout dibatalkan");
+                }
+            });
+        }
+    </script>
+</body>
+</html>

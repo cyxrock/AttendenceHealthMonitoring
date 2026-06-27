@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Riwayat Absensi - Bio Monitor</title>
+    
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        .status.red { background: #fde6e6; color: #e63757; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; }
+        .status.blue { background: #e0f2fe; color: #0369a1; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; }
+        .status.green { background: #e6f9ed; color: #00a651; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; }
+        .status.orange { background: #fff4e6; color: #f6993f; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; }
+        .status.purple { background: #f3e8ff; color: #6b21a8; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; }
+        .temp-value { font-weight: 700; font-size: 1.1rem; }
+        .gsr-value { font-weight: 600; font-size: 1rem; color: #334155; }
+        .btn-delete { background: #fff0f0; color: #e63757; border: 1px solid #ffd5d5; padding: 6px 10px; border-radius: 6px; cursor: pointer; transition: 0.2s; }
+        .btn-delete:hover { background: #e63757; color: #fff; }
+        
+        /* Style Tombol Export */
+        .btn-export { background: #00a651; color: white; border: none; padding: 10px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.9rem; transition: 0.2s; display: flex; align-items: center; gap: 8px; }
+        .btn-export:hover { background: #008741; }
+        .btn-export:disabled { background: #a0aec0; cursor: not-allowed; }
+
+        /* STYLE OVERLAY & CARD FILTER TANGGAL */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); display: flex; justify-content: center; align-items: center; z-index: 9999; opacity: 0; pointer-events: none; transition: 0.3s ease; }
+        .modal-overlay.active { opacity: 1; pointer-events: auto; }
+        .modal-card { background: #fff; width: 100%; max-width: 420px; border-radius: 12px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); overflow: hidden; transform: translateY(-20px); transition: 0.3s ease; }
+        .modal-overlay.active .modal-card { transform: translateY(0); }
+        .modal-header { background: #edf2f9; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #d8e2ef; }
+        .modal-header h3 { margin: 0; color: #0b1727; font-size: 1.1rem; font-weight: 700; }
+        .modal-close { background: none; border: none; color: #5e6e82; font-size: 1.2rem; cursor: pointer; }
+        .modal-body { padding: 20px; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 6px; font-weight: 600; color: #344054; font-size: 0.85rem; }
+        .form-group input[type="date"] { width: 100%; padding: 8px 12px; border: 1px solid #d0d5dd; border-radius: 6px; font-family: 'Inter', sans-serif; font-size: 0.9rem; color: #1d2939; box-sizing: border-box; }
+        .modal-footer { padding: 15px 20px; border-top: 1px solid #edf2f9; display: flex; justify-content: flex-end; gap: 10px; }
+        .btn-cancel { background: #fff; color: #344054; border: 1px solid #d0d5dd; padding: 8px 14px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.85rem; }
+        .btn-cancel:hover { background: #f9fafb; }
+        .btn-submit { background: #00a651; color: #fff; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.85rem; display: flex; align-items: center; gap: 6px; }
+        .btn-submit:hover { background: #008741; }
+        .btn-submit:disabled { background: #a0aec0; cursor: not-allowed; }
+    </style>
+</head>
+<body class="dashboard-body">
+
+    <nav class="sidebar">
+        <div class="sidebar-brand">
+            <h2><i class="fa-solid fa-fingerprint"></i> PT. ANGKASA</h2>
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="dashboard.html"><i class="fa-solid fa-gauge-high"></i> Dashboard</a></li>
+            <li class="active"><a href="riwayat-absensi.html"><i class="fa-solid fa-clipboard-list"></i> Riwayat Absensi</a></li>
+            <li><a href="data-pegawai.html"><i class="fa-solid fa-users"></i> Data Karyawan</a></li>
+            <li><a href="#" id="logout-btn"><i class="fa-solid fa-right-from-bracket"></i> Logout</a></li>
+        </ul>
+    </nav>
+
+    <main class="main-content">
+        <header class="dashboard-header crm-header">
+            <div class="search-wrapper">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="search" placeholder="Cari nama atau tanggal...">
+            </div>
+            
+            <div class="header-actions">
+                <div class="user-profile">
+                    <img src="https://ui-avatars.com/api/?name=Putu+Angga&background=2c7be5&color=fff" alt="Admin">
+                    <div>
+                        <h4>Putu Angga D.S.</h4>
+                        <small>Admin Utama</small>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+            <div>
+                <h2 style="color: #0b1727; font-weight: 700; margin: 0;">Laporan Kehadiran & Vital Sign</h2>
+                <p style="color: #5e6e82; font-size: 0.9rem; margin: 5px 0 0 0;">Kelola, pantau, dan unduh data kehadiran karyawan</p>
+            </div>
+            <button id="btn-export-trigger" class="btn-export">
+                <i class="fa-solid fa-file-excel"></i> Export ke Excel
+            </button>
+        </div>
+
+        <div class="card">
+            <div class="card-body table-responsive">
+                <table class="crm-table">
+                    <thead>
+                        <tr>
+                            <td>Waktu & Tanggal</td>
+                            <td>Responden</td>
+                            <td>Shift Kerja</td>
+                            <td>Suhu Tubuh</td>
+                            <td>Detak Jantung</td>
+                            <td>Saturasi Oksigen</td>
+                            <td>Tingkat Stres (GSR)</td> 
+                            <td>Status Keterangan</td>
+                            <td style="text-align: center;">Aksi</td>
+                        </tr>
+                    </thead>
+                    <tbody id="table-body-absensi">
+                        <tr><td colspan="9" style="text-align:center;">Menghubungkan ke database...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div style="padding: 1.5rem; border-top: 1px solid #edf2f9;">
+                <span id="data-count" style="font-size: 0.85rem; color: #5e6e82;">Memuat riwayat...</span>
+            </div>
+        </div>
+    </main>
+
+    <div id="export-modal" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-calendar-days" style="color: #00a651;"></i> Filter Rentang Tanggal</h3>
+                <button id="modal-close-btn" class="modal-close"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="start-date">Dari Tanggal</label>
+                    <input type="date" id="start-date">
+                </div>
+                <div class="form-group">
+                    <label for="end-date">Sampai Tanggal</label>
+                    <input type="date" id="end-date">
+                </div>
+                <p style="font-size: 0.75rem; color: #667085; margin: 10px 0 0 0; line-height: 1.4;">
+                    *Sistem akan mencocokkan rentang tanggal di atas dengan tanggal absensi (WITA) yang tersimpan di database.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button id="modal-cancel-btn" class="btn-cancel">Batal</button>
+                <button id="btn-do-export" class="btn-submit">
+                    <i class="fa-solid fa-download"></i> Unduh Excel
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+    <script>
+    if (!sessionStorage.getItem("statusLogin")) {
+        window.location.replace("index.html");
+    }
+
+    window.onpageshow = function(event) {
+        if (event.persisted || (window.performance && window.performance.navigation.type === 2)) {
+            window.location.reload();
+        }
+    };
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyD5Zzz6TyWU_Sk6rJ9ZxYR--AOmaVvHqW8",
+        databaseURL: "https://absensi-vitalsign-default-rtdb.firebaseio.com/",
+        projectId: "absensi-vitalsign"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    async function getNamaKaryawan(id) {
+        const snapshot = await db.ref('karyawan/' + id).once('value');
+        return snapshot.exists() ? snapshot.val().nama : "ID: " + id;
+    }
+
+    // Fungsi pembantu memisahkan Tanggal dan Waktu khusus untuk output EXCEL
+    function pisahTanggalDanWaktu(timestampStr) {
+        let hasil = { tanggal: '-', waktu: '-' };
+        if (!timestampStr || timestampStr === '-') return hasil;
+        
+        try {
+            const partsSpace = timestampStr.split(' ');
+            const dateParts = partsSpace[0].split('-'); 
+            const jamMenitDetik = partsSpace[1] || ''; 
+            const zonaWaktu = partsSpace[2] || 'WITA'; 
+
+            const hari = parseInt(dateParts[0]);
+            const indeksBulan = parseInt(dateParts[1]) - 1; 
+            const tahun = dateParts[2];
+            
+            const listHari = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
+            const listBulan = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", 
+                               "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+            
+            const objekTanggal = new Date(tahun, indeksBulan, hari);
+            const namaHari = listHari[objekTanggal.getDay()];
+            const namaBulan = listBulan[indeksBulan]; 
+            
+            hasil.tanggal = `${namaHari}, ${hari} ${namaBulan} ${tahun}`;
+            hasil.waktu = `${jamMenitDetik} ${zonaWaktu}`;
+        } catch (e) {
+            hasil.tanggal = timestampStr;
+        }
+        return hasil;
+    }
+
+    function formatWaktuDenganHari(timestampStr) {
+        if (!timestampStr || timestampStr === '-') return '-';
+        try {
+            const p = pisahTanggalDanWaktu(timestampStr);
+            return p.waktu !== '-' ? `${p.tanggal} ${p.waktu}` : p.tanggal;
+        } catch (e) {
+            return timestampStr; 
+        }
+    }
+
+    function hapusData(key) {
+        if (confirm("Apakah Anda yakin ingin menghapus data riwayat ini?")) {
+            db.ref('absensi_log/' + key).remove()
+            .then(() => { console.log("Data berhasil dihapus."); })
+            .catch((error) => { alert("Gagal menghapus data: " + error.message); });
+        }
+    }
+
+    const tableBody = document.getElementById('table-body-absensi');
+    const countLabel = document.getElementById('data-count');
+
+    db.ref('absensi_log').on('value', async (snapshot) => {
+        tableBody.innerHTML = ""; 
+        let count = 0;
+
+        if (snapshot.exists()) {
+            const entries = [];
+            snapshot.forEach(child => { entries.push({ key: child.key, val: child.val() }); });
+            entries.sort((a, b) => b.key - a.key); 
+
+            for (const item of entries) {
+                const val = item.val;
+                const key = item.key;
+                count++;
+                const namaResponden = await getNamaKaryawan(val.id_jari);
+                let waktuLengkap = formatWaktuDenganHari(val.last_checkin);
+                let shiftKerja = val.shift || "Pagi"; 
+                let shiftClass = "purple"; 
+
+                let rawKategori = (val.kategori || "").toLowerCase();
+                let kategoriAbsen = "Hadir"; 
+                let kategoriClass = "green"; 
+
+                if (rawKategori.includes("terlambat")) { kategoriAbsen = "Terlambat"; kategoriClass = "orange"; }
+                else if (rawKategori.includes("pulang awal")) { kategoriAbsen = "Pulang Awal"; kategoriClass = "red"; }
+                else if (rawKategori.includes("pulang")) { kategoriAbsen = "Pulang"; kategoriClass = "blue"; }
+                else if (rawKategori.includes("lembur")) { kategoriAbsen = "Lembur"; kategoriClass = "purple"; }
+                else if (rawKategori.includes("tepat waktu")) { kategoriAbsen = "Tepat Waktu"; kategoriClass = "green"; }
+
+                let suhu = val.suhu ? parseFloat(val.suhu).toFixed(1) : "0.0";
+                let tempClass = (suhu >= 37.5) ? "red" : (suhu < 35.0 && suhu > 0) ? "blue" : "green";
+                let tempLabel = (suhu >= 37.5) ? "Demam" : (suhu < 35.0 && suhu > 0) ? "Hipotermia" : "Normal";
+
+                let gsrVal = val.gsr ? parseFloat(val.gsr).toFixed(2) : 0;
+                let gsrClass = (gsrVal > 20) ? "red" : (gsrVal > 5) ? "orange" : "green";
+                let gsrLabel = (gsrVal > 20) ? "Stres Tinggi" : (gsrVal > 5) ? "Cemas/Sedang" : "Rileks";
+
+                let heartRate = (val.bpm === undefined || val.bpm <= 0) ? "Cek Jari" : val.bpm + " bpm";
+                let spo2Val = (val.spo2 === undefined || val.spo2 <= 0) ? "Cek Jari" : val.spo2 + "%";
+
+                const row = `
+                    <tr>
+                        <td><b>${waktuLengkap}</b></td>
+                        <td>
+                            <div class="user-info">
+                                <img src="https://ui-avatars.com/api/?name=${namaResponden}&background=random" style="width:35px; height:35px; border-radius:50%;">
+                                <div><h4>${namaResponden}</h4><small>ID: ${val.id_jari}</small></div>
+                            </div>
+                        </td>
+                        <td><span class="status ${shiftClass}">${shiftKerja}</span></td>
+                        <td>
+                            <span class="temp-value" style="color: ${suhu >= 37.5 ? '#e63757' : '#2c7be5'};">${suhu}°C</span>
+                            <br><span class="status ${tempClass}">${tempLabel}</span>
+                        </td>
+                        <td><span style="font-weight:600;">${heartRate}</span></td>
+                        <td><span style="font-weight:600;">${spo2Val}</span></td>
+                        <td>
+                            <span class="gsr-value">${gsrVal} μS</span>
+                            <br><span class="status ${gsrClass}">${gsrLabel}</span>
+                        </td>
+                        <td><span class="status ${kategoriClass}">${kategoriAbsen}</span></td>
+                        <td style="text-align: center;">
+                            <button class="btn-delete" onclick="hapusData('${key}')"><i class="fa-solid fa-trash-can"></i></button>
+                        </td>
+                    </tr>
+                `;
+                tableBody.insertAdjacentHTML('beforeend', row);
+            }
+            countLabel.innerText = `Total ${count} riwayat terdeteksi.`;
+        } else {
+            tableBody.innerHTML = "<tr><td colspan='9' style='text-align:center;'>Belum ada riwayat absensi.</td></tr>";
+        }
+    });
+
+    // LOGIKA MODAL INTERAKSI & EXCEL FILTER TANGGAL
+    const modalExport = document.getElementById('export-modal');
+    const btnExportTrigger = document.getElementById('btn-export-trigger');
+    const btnDoExport = document.getElementById('btn-do-export');
+    const modalCloseBtn = document.getElementById('modal-close-btn');
+    const modalCancelBtn = document.getElementById('modal-cancel-btn');
+
+    btnExportTrigger.addEventListener('click', () => {
+        const hariIni = new Date().toISOString().slice(0, 10);
+        document.getElementById('start-date').value = hariIni;
+        document.getElementById('end-date').value = hariIni;
+        modalExport.classList.add('active');
+    });
+
+    function tutupModal() { modalExport.classList.remove('active'); }
+    modalCloseBtn.addEventListener('click', tutupModal);
+    modalCancelBtn.addEventListener('click', tutupModal);
+
+    btnDoExport.addEventListener('click', async function() {
+        const startDateVal = document.getElementById('start-date').value;
+        const endDateVal = document.getElementById('end-date').value;
+
+        if (!startDateVal || !endDateVal) {
+            alert("Harap pilih tanggal mulai dan tanggal selesai terlebih dahulu!");
+            return;
+        }
+
+        const startTarget = new Date(startDateVal + "T00:00:00");
+        const endTarget = new Date(endDateVal + "T23:59:59");
+
+        if (startTarget > endTarget) {
+            alert("Tanggal mulai tidak boleh melebihi tanggal selesai!");
+            return;
+        }
+
+        this.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Memproses...';
+        this.disabled = true;
+
+        try {
+            const snapshot = await db.ref('absensi_log').once('value');
+            
+            if (!snapshot.exists()) {
+                alert("Tidak ada data riwayat absensi untuk diekspor.");
+                tutupModal();
+                return;
+            }
+
+            const excelData = [];
+            const entries = [];
+
+            snapshot.forEach(child => { entries.push({ key: child.key, val: child.val() }); });
+            entries.sort((a, b) => b.key - a.key);
+
+            for (const item of entries) {
+                const val = item.val;
+                
+                if (!val.last_checkin || val.last_checkin === '-') continue;
+                
+                const dateParts = val.last_checkin.split(' ')[0].split('-');
+                const logDate = new Date(`${dateParts[2]}-${dateParts[1]}-${dateParts[0]}T00:00:00`);
+
+                if (logDate < startTarget || logDate > endTarget) {
+                    continue;
+                }
+
+                const namaResponden = await getNamaKaryawan(val.id_jari);
+                let suhu = val.suhu ? parseFloat(val.suhu).toFixed(1) : "0.0";
+                let heartRate = (val.bpm === undefined || val.bpm <= 0) ? "Cek Jari" : val.bpm;
+                let spo2Val = (val.spo2 === undefined || val.spo2 <= 0) ? "Cek Jari" : val.spo2;
+                let gsrVal = val.gsr ? parseFloat(val.gsr).toFixed(2) : 0;
+
+                let rawKategori = (val.kategori || "").toLowerCase();
+                let kategoriAbsen = "Hadir";
+                if (rawKategori.includes("terlambat")) kategoriAbsen = "Terlambat";
+                else if (rawKategori.includes("pulang awal")) kategoriAbsen = "Pulang Awal";
+                else if (rawKategori.includes("pulang")) kategoriAbsen = "Pulang";
+                else if (rawKategori.includes("lembur")) kategoriAbsen = "Lembur";
+                else if (rawKategori.includes("tepat waktu")) kategoriAbsen = "Tepat Waktu";
+
+                // Memisahkan teks menjadi data objek tanggal & waktu mandiri
+                const dtTerpisah = pisahTanggalDanWaktu(val.last_checkin);
+
+                // PENATAAN KOLOM EXCEL (Kini tanggal & waktu dipisahkan)
+                excelData.push({
+                    "Tanggal Absensi": dtTerpisah.tanggal,
+                    "Jam Absensi": dtTerpisah.waktu,
+                    "ID Jari Karyawan": val.id_jari,
+                    "Nama Karyawan": namaResponden,
+                    "Shift Kerja": val.shift || "Pagi",
+                    "Suhu Tubuh (°C)": parseFloat(suhu),
+                    "Detak Jantung (BPM)": heartRate,
+                    "Saturasi Oksigen (%)": spo2Val,
+                    "Tingkat Stres GSR (μS)": parseFloat(gsrVal),
+                    "Status Keterangan": kategoriAbsen
+                });
+            }
+
+            if (excelData.length === 0) {
+                alert(`Data tidak ditemukan pada rentang tanggal ${startDateVal} s/d ${endDateVal}.`);
+            } else {
+                const worksheet = XLSX.utils.json_to_sheet(excelData);
+                const workbook = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(workbook, worksheet, "Laporan Absensi Terfilter");
+
+                XLSX.writeFile(workbook, `Laporan_Absensi_Periode_${startDateVal}_ke_${endDateVal}.xlsx`);
+                tutupModal();
+            }
+
+        } catch (error) {
+            console.error(error);
+            alert("Terjadi kegagalan saat menyaring & export data: " + error.message);
+        } finally {
+            this.innerHTML = '<i class="fa-solid fa-download"></i> Unduh Excel';
+            this.disabled = false;
+        }
+    });
+
+    // LOGIKA LOGOUT
+    const logoutBtn = document.getElementById('logout-btn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', function(event) {
+            event.preventDefault(); 
+            if (confirm("Anda yakin ingin logout?")) {
+                sessionStorage.clear();
+                localStorage.clear();
+                window.location.replace("index.html");
+            }
+        });
+    }
+</script>
+
+<script src="js/riwayat.js"></script> 
+</body>
+</html>
