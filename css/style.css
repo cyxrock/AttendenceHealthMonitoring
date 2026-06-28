@@ -41,10 +41,40 @@ a { text-decoration: none; color: inherit; transition: 0.3s; }
     transition: all 0.3s ease-in-out;
 }
 
-.sidebar-brand { padding: 1.8rem 1.5rem; color: var(--falcon-primary); }
-.sidebar-brand h2 { font-size: 1.3rem; font-weight: 800; display: flex; align-items: center; gap: 12px; letter-spacing: -0.5px; }
+/* =========================================
+   DESAIN HEADER LOGO (PT. ANGKASA) - DESKTOP
+   ========================================= */
+.sidebar-brand { 
+    padding: 1.2rem 1.5rem; 
+    background: linear-gradient(180deg, rgba(44, 123, 229, 0.04) 0%, transparent 100%);
+    border-bottom: 1px solid rgba(44, 123, 229, 0.1);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+}
+.sidebar-brand h2 { 
+    font-size: 1.15rem; 
+    font-weight: 800; 
+    display: flex; 
+    align-items: center; 
+    gap: 12px; 
+    letter-spacing: 0.5px;
+    color: var(--falcon-heading);
+}
+.sidebar-brand h2 i {
+    background: var(--falcon-primary);
+    color: white;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    font-size: 1.1rem;
+    box-shadow: 0 4px 12px rgba(44, 123, 229, 0.3);
+}
 
-.sidebar-menu { padding: 1rem; }
+.sidebar-menu { padding: 0 1rem 1rem 1rem; }
 .sidebar-menu li { list-style: none; margin-bottom: 0.5rem; }
 
 .sidebar-menu a {
@@ -315,22 +345,30 @@ body.login-body {
         align-items: center;
     }
 
-    /* Merapikan Area Logo di Atas */
+    /* Merapikan Area Logo Header (PT. ANGKASA) di HP */
     .sidebar-brand {
-        padding: 1.5rem 0;
+        padding: 1.2rem 0;
         width: 100%;
         display: flex;
         justify-content: center;
+        background: none; /* Hapus gradasi desktop */
+        border-bottom: 1px solid rgba(0,0,0,0.05); /* Garis batas tipis */
+        margin-bottom: 0.5rem;
     }
+    
     .sidebar-brand h2 {
         justify-content: center;
         gap: 0;
-        font-size: 1.2rem;
+        /* TRIK KHUSUS: Sembunyikan teks "PT. ANGKASA" langsung dari induknya */
+        font-size: 0 !important; 
     }
-    /* Sembunyikan Teks Logo PT. ANGKASA secara mutlak */
-    .sidebar-brand h2 span:last-child,
-    .sidebar-brand h2 text { 
-        display: none !important; 
+    
+    /* Kembalikan ukuran ikon agar tetap tampil gagah di tengah HP */
+    .sidebar-brand h2 i { 
+        font-size: 1.25rem !important; 
+        width: 42px !important;
+        height: 42px !important;
+        border-radius: 12px !important;
     }
 
     /* Merapikan Daftar Menu Menjadi Baris Ikon Tengah */
@@ -406,7 +444,7 @@ body.login-body {
     .card-single { padding: 1.2rem; }
     #digital-clock { font-size: 1.8rem !important; }
 
-    /* BARU: Memaksa Layout Grid Utama Mengalir Vertikal Penuh ke Bawah */
+    /* Memaksa Layout Grid Utama Mengalir Vertikal Penuh ke Bawah */
     .crm-grid { 
         display: flex !important;
         flex-direction: column !important;
@@ -425,7 +463,7 @@ body.login-body {
         box-sizing: border-box;
     }
 
-    /* BARU: Mengunci area pembungkus tabel responsif (Bisa digeser aman tanpa merusak layout luar) */
+    /* Mengunci area pembungkus tabel responsif (Bisa digeser aman tanpa merusak layout luar) */
     .table-responsive {
         width: 100% !important;
         overflow-x: auto !important;
