@@ -119,12 +119,17 @@ a { text-decoration: none; color: inherit; transition: 0.3s; }
 .mt-2 { margin-top: 1.5rem; }
 .mb-2 { margin-bottom: 1.5rem; }
 
-.table-responsive { overflow-x: auto; }
+/* Pembungkus Tabel Responsif Mencegah Layout Pecah */
+.table-responsive { 
+    width: 100%;
+    overflow-x: auto; 
+    -webkit-overflow-scrolling: touch;
+}
 .crm-table { width: 100%; border-collapse: collapse; }
 .crm-table thead td { background: #f9fafd; padding: 1rem 1.5rem; font-weight: 700; font-size: 0.75rem; text-transform: uppercase; color: var(--falcon-text); letter-spacing: 0.5px; }
 .crm-table tbody tr { transition: 0.2s; border-bottom: 1px solid var(--falcon-border); }
 .crm-table tbody tr:hover { background-color: #f8faff; }
-.crm-table td { padding: 1.2rem 1.5rem; color: var(--falcon-heading); vertical-align: middle; font-weight: 500; }
+.crm-table td { padding: 1.2rem 1.5rem; color: var(--falcon-heading); vertical-align: middle; font-weight: 500; white-space: nowrap; }
 
 .user-info { display: flex; align-items: center; gap: 15px; }
 .user-info img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
@@ -170,9 +175,6 @@ body.landing-page {
 .navbar .logo {
     font-size: 1.5rem; font-weight: 800; color: var(--falcon-primary);
     display: flex; align-items: center; gap: 10px;
-}
-.navbar .logo::before {
-    content: '\f577'; font-family: 'Font Awesome 6 Free'; font-weight: 900;
 }
 
 .btn-login-nav {
@@ -292,31 +294,166 @@ body.login-body {
 }
 
 /* =========================================
-   RESPONSIVE
+   RESPONSIVE (OPTIMAL DI MOBILE & TABLET)
    ========================================= */
 @media screen and (max-width: 1024px) {
-    .cards-grid { gap: 1rem; }
+    .cards-grid { grid-template-columns: repeat(2, 1fr); gap: 1rem; }
     .crm-grid { grid-template-columns: 1fr; } 
     .search-wrapper { width: 100%; }
 }
 
 @media screen and (max-width: 768px) {
-    /* Dashboard */
-    .sidebar { left: -100%; width: 0; } 
-    .main-content { margin-left: 0; width: 100%; padding: 1.5rem; }
-    .cards-grid { grid-template-columns: 1fr; }
-    .dashboard-header { flex-direction: column; align-items: flex-start; gap: 1rem; }
+    /* =========================================
+       PERBAIKAN TOTAL SIDEBAR KIRI (MOBILE CENTERED)
+       ========================================= */
+    .sidebar { 
+        width: 70px; 
+        left: 0; 
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    /* Merapikan Area Logo di Atas */
+    .sidebar-brand {
+        padding: 1.5rem 0;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+    }
+    .sidebar-brand h2 {
+        justify-content: center;
+        gap: 0;
+        font-size: 1.2rem;
+    }
+    /* Sembunyikan Teks Logo PT. ANGKASA secara mutlak */
+    .sidebar-brand h2 span:last-child,
+    .sidebar-brand h2 text { 
+        display: none !important; 
+    }
+
+    /* Merapikan Daftar Menu Menjadi Baris Ikon Tengah */
+    .sidebar-menu { 
+        padding: 0.5rem 0;
+        width: 100%;
+    }
+    .sidebar-menu li {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        margin-bottom: 0.8rem;
+    }
+    
+    .sidebar-menu a { 
+        width: 46px;
+        height: 46px;
+        padding: 0 !important;
+        display: flex !important;
+        justify-content: center !important; 
+        align-items: center !important;
+        border-radius: 12px;
+        font-size: 0; /* Menghilangkan sisa space text bawaan HTML */
+    }
+    
+    /* Paksa Sembunyikan Semua Teks Submenu */
+    .sidebar-menu a span { 
+        display: none !important; 
+    }
+    
+    /* Memaksa Ikon Berada Tepat di Tengah Kotak */
+    .sidebar-menu a i { 
+        margin: 0 !important; 
+        padding: 0 !important;
+        font-size: 1.3rem !important;
+        width: auto !important;
+        text-align: center;
+        display: inline-block;
+    }
+
+    /* Nonaktifkan pergeseran hover saat di HP */
+    .sidebar-menu a:hover, .sidebar-menu li.active a {
+        transform: none !important;
+    }
+
+    /* =========================================
+       PERBAIKAN STRUKTUR GRID UTAMA & KONTEN (KANAN)
+       ========================================= */
+    .main-content { 
+        margin-left: 70px; 
+        width: calc(100% - 70px); 
+        padding: 1rem; 
+        overflow-x: hidden; 
+    }
+    
+    .dashboard-header { 
+        flex-direction: column; 
+        align-items: flex-start; 
+        gap: 1rem; 
+        margin-bottom: 1.5rem;
+    }
+    
     .search-wrapper { width: 100%; }
-    .header-actions { width: 100%; justify-content: space-between; margin-top: 1rem; }
-    #digital-clock { font-size: 2.2rem !important; }
-    .card-single { padding: 1.5rem; }
+    .header-actions { width: 100%; justify-content: space-between; margin-top: 0.5rem; }
+    
+    /* Sembunyikan nama teks Admin di header kanan */
+    .user-profile div {
+        display: none !important;
+    }
 
-    /* Landing Page */
-    .hero-content h1 { font-size: 2.5rem; }
-    .features-section { grid-template-columns: 1fr; padding: 50px 5%; }
-    .cta-buttons { flex-direction: column; }
-    .btn-primary, .btn-secondary { width: 100%; }
+    /* Mengubah susunan kartu indikator statistik */
+    .cards-grid { grid-template-columns: 1fr; gap: 1rem; }
+    .card-single { padding: 1.2rem; }
+    #digital-clock { font-size: 1.8rem !important; }
 
-    /* Login Page */
-    #login-card { margin: 20px; padding: 30px; }
+    /* BARU: Memaksa Layout Grid Utama Mengalir Vertikal Penuh ke Bawah */
+    .crm-grid { 
+        display: flex !important;
+        flex-direction: column !important;
+        width: 100% !important;
+        gap: 1.5rem;
+    }
+
+    .crm-grid > .crm-main,
+    .crm-grid > .crm-sidebar {
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+
+    .crm-grid .card {
+        width: 100% !important;
+        box-sizing: border-box;
+    }
+
+    /* BARU: Mengunci area pembungkus tabel responsif (Bisa digeser aman tanpa merusak layout luar) */
+    .table-responsive {
+        width: 100% !important;
+        overflow-x: auto !important;
+        display: block;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .crm-table { 
+        min-width: 580px; 
+        width: 100%;
+    }
+    .crm-table td { 
+        padding: 0.8rem 0.6rem; 
+        font-size: 0.82rem; 
+    }
+
+    /* Menyeimbangkan padding log aktivitas feed */
+    .p-1 {
+        padding: 1.2rem !important;
+    }
+
+    /* Landing Page Mobile */
+    .hero-section { padding: 130px 5% 60px; }
+    .hero-content h1 { font-size: 2.2rem; }
+    .features-section { grid-template-columns: 1fr; padding: 40px 5%; gap: 20px; }
+    .cta-buttons { flex-direction: column; gap: 10px; }
+    .btn-primary, .btn-secondary { width: 100%; text-align: center; }
+
+    /* Login Page Mobile */
+    #login-card { margin: 15px; padding: 35px 25px; }
 }
